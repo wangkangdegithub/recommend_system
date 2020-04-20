@@ -2,7 +2,7 @@
 
 
 
-目录结构
+### 目录结构
 ```
 recommend_system:.
 │  README.md
@@ -22,7 +22,7 @@ recommend_system:.
         __init__.py
 ```
 
-**开发环境:**
+### 开发环境:
 - windows-10 
 - Python 3.6.1 
 - pandas==0.24.0 
@@ -30,6 +30,16 @@ recommend_system:.
 
 
 
-**代码执行：**
+### 代码执行：
 
->python recommend_system\run\recommend.py
+
+![](run/run.png)
+
+
+`C:\Users\Administrator>cd C:\Users\Administrator\Desktop\`
+
+`C:\Users\Administrator\Desktop>python
+recommend_system\run\recommend.py`
+
+
+
