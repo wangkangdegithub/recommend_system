@@ -1,5 +1,12 @@
-from numpy import linalg as la
+"""
+@author:
+@file: run.py
+@time: 2020/4/18 13:26
+@desc: SVD算法
+"""
+
 from numpy import mat, eye
+from numpy import linalg as la
 
 
 def cos_sim(victor_a, victor_b):
@@ -7,31 +14,28 @@ def cos_sim(victor_a, victor_b):
     计算向量余弦相似度
     :param victor_a:
     :param victor_b:
-    :return: 相似度值（0~1）
+    :return: 归一化0~1
     """
     num = float(victor_a * victor_b.T)
     denom = la.norm(victor_a) * la.norm(victor_b)
-    # 归一化处理
+    # 归一化0~1
     return 0.5 + 0.5 * (num / denom)
 
 
-def choice_length(sigma, loop_num=20):
+def choice_length(sigma, loop_num):
     """
-    选择sigma向量长度,
-    通常保留矩阵80 % ～ 90 % 的能量，就可以得到重要的特征并取出噪声。
+    选择sigma向量长度,通常保留矩阵90 % 的能量，就可以得到重要的特征并取出噪声。
     :param sigma: sigma的值
     :param loop_num: 循环次数，默认为20次
-    :return:
+    :return:最优sigma向量长度
     """
     # 总方差的集合（总能量值）
     sigma_square = sigma ** 2
     sigma_sum = sum(sigma_square)
     for sigma_length in range(1, loop_num + 1):
         sigma_square_sum = sum(sigma_square[:sigma_length])
-        # print('主成分：{0}, 方差占比：{1}%%'.format(sigma_length + 1, '2.0f'),
-        #       format(sigma_square_sum / sigma_sum * 100, '4.2f'))
         if sigma_square_sum / sigma_sum > 0.9:
-            # print('sigma向量长度：'，sigma_length)
+            # print('sigma最优向量长度：', sigma_length)
             return sigma_length
         else:
             continue
@@ -43,22 +47,22 @@ def svd_rating(user_item, user_id, item_idx):
     :param user_item:
     :param user_id:
     :param item_idx: 待打分的item_idx
-    :return:
+    :return: 预测得分
     """
     # 奇异值分解
     u, sigma, vt = la.svd(user_item)
     # 选择最优的sigma向量长度
-    sigma_length = choice_length(sigma, 20)
-    # 基于奇异值构建对角矩阵
-    diagonal_sigma = mat(eye(sigma_length) * sigma[: sigma_length])
-    print(diagonal_sigma)
+    sigma_length = choice_length(sigma=sigma, loop_num=len(user_item))
     # 构造产品矩阵向量
-    item_user = user_item.T
+    # 方法一
+    # item_victors = mat(pd.DataFrame(vt.T).iloc[:, :sigma_length])
+    # 方法二
+    diagonal_sigma = mat(eye(sigma_length) * sigma[: sigma_length])
     diagonal_sigma_inverse = diagonal_sigma.I
-    item_victors = item_user * u[:, :sigma_length] * diagonal_sigma_inverse
+    item_victors = user_item.T * u[:, :sigma_length] * diagonal_sigma_inverse
 
     sim_total, rat_sim_total = 0, 0
-    total_items = len(item_user)
+    total_items = user_item.shape[1]
 
     # 基于已打分物品，求用户user_id 对所有未打分产品的预测得分
     for idx in range(total_items):
@@ -74,4 +78,4 @@ def svd_rating(user_item, user_id, item_idx):
     if sim_total == 0:
         return 0
     else:
-        return rat_sim_total / sim_total
+        return float(rat_sim_total / sim_total)
